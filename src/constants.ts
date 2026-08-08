@@ -7,12 +7,22 @@
 
 // ======== AI 模型 ========
 
-/** ONNX Runtime CDN 加载地址 */
-export const ONNX_WASM_PATH = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
+/** ONNX Runtime WASM 文件路径（用于 ort.env.wasm.wasmPaths） */
+export const ONNX_WASM_PATH = import.meta.env.DEV
+  ? 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/'
+  : '/api/onnx/';
 
-/** LaMa 模型下载地址（hf-mirror 镜像站） */
-export const LAMA_MODEL_URL =
-  'https://hf-mirror.com/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx';
+/**
+ * LaMa 模型下载地址。
+ *
+ * 开发环境（localhost）：直接请求 hf-mirror.com，浏览器 CORS 策略较宽松。
+ * 生产环境（Vercel）：通过 vercel.json rewrites 反向代理，避免 CORS 问题。
+ *   → hf-mirror 的 302 重定向响应中 CORS 头只允许自身域名，
+ *     从 vercel.app 发起的请求会触发 CORS 拦截，必须走同源代理。
+ */
+export const LAMA_MODEL_URL = import.meta.env.DEV
+  ? 'https://hf-mirror.com/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx'
+  : '/api/model/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx';
 
 /** LaMa 模型 IndexedDB 缓存键 */
 export const LAMA_CACHE_KEY = 'lama-model-v1';

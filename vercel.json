@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/model/:path*",
+      "destination": "https://hf-mirror.com/:path*"
+    },
+    {
+      "source": "/api/onnx/:path*",
+      "destination": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}
