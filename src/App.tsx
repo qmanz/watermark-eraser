@@ -63,6 +63,9 @@ export default function App() {
   /** 推理结果的 data URL，传给 CompareView 做对比预览 */
   const [resultDataUrl, setResultDataUrl] = useState<string | null>(null);
 
+  /** 和 resultDataUrl 相同尺寸的原图 blob URL（保证对比时尺寸一致） */
+  const [compareOriginalUrl, setCompareOriginalUrl] = useState<string | null>(null);
+
   // ==========================================================================
   // 工具函数
   // ==========================================================================
@@ -187,6 +190,7 @@ export default function App() {
         setAppState('editing');
         resetMask();
         setResultDataUrl(null);
+    setCompareOriginalUrl(null);
       }
     },
     [processFile, resetMask]
@@ -200,6 +204,7 @@ export default function App() {
     resetImage();
     resetMask();
     setResultDataUrl(null);
+    setCompareOriginalUrl(null);
     setAppState('idle');
     modelLoadingRef.current = false;
   }, [resetImage, resetMask]);
@@ -304,12 +309,22 @@ export default function App() {
       const resultBlob = await canvasToBlob(resultCanvas);
       const resultUrl = URL.createObjectURL(resultBlob);
 
-      // 也验证 Canvas 上已有的内容（调试用）
-      // 注意：主 Canvas 可能在 done 后被 ImageEditor 卸载，这里不依赖它
       console.log('[Erase] resultUrl length:', resultUrl.length,
         'first 40:', resultUrl.slice(0, 40));
 
+      // 同时生成同尺寸的原图 blob URL（确保对比时两张图尺寸一致）
+      const origCanvas = document.createElement('canvas');
+      origCanvas.width = result.width;
+      origCanvas.height = result.height;
+      const oCtx = origCanvas.getContext('2d')!;
+      if (!image) return;
+      oCtx.drawImage(image.image, 0, 0, result.width, result.height);
+      const origBlob = await canvasToBlob(origCanvas);
+      const origUrl = URL.createObjectURL(origBlob);
+      console.log('[Erase] origUrl size:', result.width, 'x', result.height);
+
       setResultDataUrl(resultUrl);
+      setCompareOriginalUrl(origUrl);
 
       // 第七步：切换到完成状态
       setAppState('done');
@@ -456,7 +471,7 @@ export default function App() {
                 {/* 对比预览：可拖拽滑块对比原图和擦除结果 */}
                 {appState === 'done' && image && (
                   <CompareView
-                    originalDataUrl={image.dataUrl}
+                    originalDataUrl={compareOriginalUrl || image.dataUrl}
                     resultDataUrl={resultDataUrl}
                     onDownload={handleDownload}
                   />
