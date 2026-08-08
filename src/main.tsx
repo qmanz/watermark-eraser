@@ -15,8 +15,15 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/index.css';
 
-// 创建 React 根节点并渲染应用
-// StrictMode 仅在开发模式下启用，生产构建中自动剥离
+// PWA Service Worker 注册：检测到新版本时自动刷新，避免缓存旧代码
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    // 注销所有旧的 Service Worker，让下次加载获取最新版本
+    regs.forEach((reg) => reg.unregister());
+    console.log('[SW] 已注销旧 Service Worker，刷新后获取最新版本');
+  });
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
