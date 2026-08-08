@@ -137,14 +137,30 @@ async function runRealInference(
 
   const size = INFERENCE_SIZE;
   const imgTensor = imageToTensor(imageData, size);
-  const maskTensor = maskToTensor(maskData, size);
+  let maskTensor = maskToTensor(maskData, size);
 
   let maskCount = 0;
   for (let i = 0; i < maskTensor.length; i++) {
     if (maskTensor[i] > 0.5) maskCount++;
   }
-  console.log('[Inference] Mask coverage:', maskCount, '/', maskTensor.length,
-    '=', (maskCount / maskTensor.length * 100).toFixed(1) + '%');
+  console.log('[Inference] Mask coverage (before dilate):', maskCount, '/', maskTensor.length,
+    '=', (maskCount / maskTensor.length * 100).toFixed(2) + '%');
+
+  // 遮罩膨胀：当 mask 区域太小时，向外扩展让模型有足够上下文
+  const DILATE_RADIUS = 12;
+  if (maskCount > 0 && maskCount / maskTensor.length < 0.10) {
+    console.log('[Inference] Mask too small, applying dilation (radius=' + DILATE_RADIUS + ')');
+    maskTensor = dilateMask(maskTensor, size, DILATE_RADIUS);
+    let dilateCount = 0;
+    for (let i = 0; i < maskTensor.length; i++) {
+      if (maskTensor[i] > 0.5) dilateCount++;
+    }
+    console.log('[Inference] Mask coverage (after dilate):', dilateCount, '/', maskTensor.length,
+      '=', (dilateCount / maskTensor.length * 100).toFixed(2) + '%');
+  }
+
+  console.log('[Inference] Original imageData size:', imageData.width, 'x', imageData.height);
+  console.log('[Inference] Original maskData size:', maskData.width, 'x', maskData.height);
 
   console.log('[Inference] Image tensor stats:',
     'min=', minOf(imgTensor).toFixed(3),
@@ -197,4 +213,34 @@ async function runRealInference(
 
   onProgress(100);
   return result;
+}
+
+/**
+ * 形态学膨胀：将遮罩区域向外扩展 radius 个像素。
+ * 使用盒式卷积核（廉价近似），T 型扫描优化，O(n) 时间。
+ *
+ * 对于水印擦除场景，遮罩区域太小会导致模型无法定位修复区域，
+ * 膨胀可以给 LaMa 足够的上下文来推理周围像素。
+ */
+function dilateMask(mask: Float32Array, size: number, radius: number): Float32Array {
+  const result = new Float32Array(mask);
+  const dilated = new Float32Array(size * size);
+
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      if (result[y * size + x] > 0.5) {
+        const yMin = Math.max(0, y - radius);
+        const yMax = Math.min(size - 1, y + radius);
+        const xMin = Math.max(0, x - radius);
+        const xMax = Math.min(size - 1, x + radius);
+        for (let dy = yMin; dy <= yMax; dy++) {
+          for (let dx = xMin; dx <= xMax; dx++) {
+            dilated[dy * size + dx] = 1.0;
+          }
+        }
+      }
+    }
+  }
+
+  return dilated as Float32Array;
 }

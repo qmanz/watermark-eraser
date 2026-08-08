@@ -87,7 +87,7 @@ export function useCanvas(options: UseCanvasOptions = {}) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, size / 2, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
     ctx.fill();
     ctx.restore();
   }, []);
@@ -229,7 +229,7 @@ export function useCanvas(options: UseCanvasOptions = {}) {
           const w = Math.abs(pos.x - startPoint.current.x);
           const h = Math.abs(pos.y - startPoint.current.y);
           ctx.save();
-          ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+          ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
           ctx.fillRect(x, y, w, h);
           ctx.restore();
           options.onMaskChange?.(true);

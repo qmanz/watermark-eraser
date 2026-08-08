@@ -6,15 +6,15 @@
  * - 右侧（slider 右边）→ 原图
  * - 滑块可鼠标拖拽移动（也支持触摸）
  *
- * CSS 实现原理：
- *   左侧结果图用 overflow: hidden 裁剪，
- *   宽度由 sliderPos 控制（百分比），
- *   图片本身保持 minWidth 防止被压缩变形
+ * 实现原理：
+ *   两张图 absolute 定位叠加，result 图在下面、原图在上面。
+ *   原图左侧用 clip-path inset 裁剪，露出下面的 result 图。
+ *   滑块竖线标记裁剪边界。
  *
  * 支持鼠标和触摸事件，手机上也能拖拽对比
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 
 interface CompareViewProps {
   originalDataUrl: string;
@@ -27,64 +27,40 @@ export default function CompareView({
   resultDataUrl,
   onDownload,
 }: CompareViewProps) {
-  /** 滑块位置：0-100 百分比，50 = 居中 */
+  /** 滑块位置：0-100 百分比，0 = 全看结果，100 = 全看原图 */
   const [sliderPos, setSliderPos] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
 
-  useEffect(() => {
-    if (!resultDataUrl) return;
-
-    // 调试：加载两张图片到像素级对比
-    const origImg = new Image();
-    const resultImg = new Image();
-    let loaded = 0;
-
-    function check() {
-      loaded++;
-      if (loaded < 2) return;
-
-      const canvas = document.createElement('canvas');
-      const minW = Math.min(origImg.naturalWidth, resultImg.naturalWidth);
-      const minH = Math.min(origImg.naturalHeight, resultImg.naturalHeight);
-      canvas.width = minW;
-      canvas.height = minH;
-      const ctx = canvas.getContext('2d')!;
-
-      ctx.drawImage(origImg, 0, 0);
-      const orig = ctx.getImageData(0, 0, minW, minH);
-
-      ctx.drawImage(resultImg, 0, 0);
-      const res = ctx.getImageData(0, 0, minW, minH);
-
-      let diffPx = 0;
-      const total = minW * minH;
-      for (let i = 0; i < orig.data.length; i += 4) {
-        if (Math.abs(orig.data[i] - res.data[i]) > 5 ||
-            Math.abs(orig.data[i + 1] - res.data[i + 1]) > 5 ||
-            Math.abs(orig.data[i + 2] - res.data[i + 2]) > 5) {
-          diffPx++;
-        }
-      }
-      console.log('[CompareView] orig', origImg.naturalWidth, 'x', origImg.naturalHeight,
-        '| result', resultImg.naturalWidth, 'x', resultImg.naturalHeight,
-        '| diff', (diffPx / total * 100).toFixed(1) + '%',
-        diffPx > 0 ? '✅' : '❌');
-    }
-
-    origImg.onload = check;
-    resultImg.onload = check;
-    origImg.src = originalDataUrl;
-    resultImg.src = resultDataUrl;
-  }, [resultDataUrl, originalDataUrl]);
-
-  /** 鼠标拖拽滑块时更新位置 */
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const updatePos = useCallback((clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    // 限制滑块范围在 5% - 95%，避免完全看不到某一侧
-    setSliderPos(Math.max(5, Math.min(95, (x / rect.width) * 100)));
-  };
+    const x = clientX - rect.left;
+    setSliderPos(Math.max(0, Math.min(100, (x / rect.width) * 100)));
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = true;
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragging.current) return;
+    updatePos(e.clientX);
+  }, [updatePos]);
+
+  const handleMouseUp = useCallback(() => {
+    dragging.current = false;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    updatePos(touch.clientX);
+  }, [updatePos]);
+
+  // 原图从左侧裁剪: inset(0 calc(100% - sliderPos%) 0 0)
+  // 即：原图只显示右边 (100 - sliderPos)% 的部分，左边 sliderPos% 显示结果图
+  const clipRight = 100 - sliderPos;
 
   return (
     <div className="card">
@@ -107,56 +83,58 @@ export default function CompareView({
       {/* 对比容器 */}
       <div
         ref={containerRef}
-        className="relative w-full rounded-lg overflow-hidden border border-gray-200 cursor-col-resize"
+        className="relative w-full rounded-lg overflow-hidden border border-gray-200 select-none"
+        style={{ cursor: 'ew-resize' }}
         onMouseMove={handleMouseMove}
-        onTouchMove={(e) => {
-          // 触摸事件：多点触控取第一个触点
-          const touch = e.touches[0];
-          if (containerRef.current) {
-            const rect = containerRef.current.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            setSliderPos(Math.max(5, Math.min(95, (x / rect.width) * 100)));
-          }
-        }}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchMove={handleTouchMove}
       >
-        {/* ===== 左侧：结果图（被裁剪） ===== */}
-        <div
-          className="absolute top-0 left-0 h-full overflow-hidden"
-          style={{ width: `${sliderPos}%` }}
-        >
-          <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-            结果
-          </div>
+        {/* 底层：结果图（全图可见，被原图遮挡右边部分） */}
+        <div className="relative">
           {resultDataUrl ? (
             <img
               src={resultDataUrl}
               alt="处理后"
-              className="w-full"
-              style={{ maxWidth: 'none', minWidth: `${100 / (sliderPos / 100)}%` }}
+              className="w-full block"
+              draggable={false}
             />
           ) : (
             <div className="w-full aspect-video bg-gray-200" />
           )}
         </div>
 
-        {/* ===== 右侧：原图 ===== */}
-        <div className="relative">
-          <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
-            原图
-          </div>
+        {/* 上层：原图，用 clip-path 只显示右侧部分 */}
+        <div
+          className="absolute inset-0"
+          style={{
+            clipPath: `inset(0 ${clipRight}% 0 0)`,
+          }}
+        >
           <img
             src={originalDataUrl}
             alt="原图"
-            className="w-full"
+            className="w-full block"
+            draggable={false}
           />
         </div>
 
-        {/* ===== 滑块（白色竖线 + 圆形拖拽手柄） ===== */}
+        {/* 标签 */}
+        <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
+          结果
+        </div>
+        <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
+          原图
+        </div>
+
+        {/* 滑块竖线 + 手柄 */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-md cursor-col-resize"
-          style={{ left: `${sliderPos}%`, transform: 'translateX(-50%)' }}
+          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-md z-20"
+          style={{ left: `${sliderPos}%` }}
+          onMouseDown={handleMouseDown}
+          onTouchStart={() => { dragging.current = true; }}
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border-2 border-gray-300 flex items-center justify-center shadow">
+          <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full border-2 border-gray-300 flex items-center justify-center shadow cursor-ew-resize select-none">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2">
               <path d="M9 18l-6-6 6-6M15 6l6 6-6 6" />
             </svg>

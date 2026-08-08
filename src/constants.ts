@@ -38,7 +38,7 @@ export const LAMA_CACHE_KEY = 'lama-model-v1';
 export const INFERENCE_SIZE = 512;
 
 /** 遮罩二值化阈值：红色通道 > 此值判定为"需要修复" */
-export const MASK_THRESHOLD = 128;
+export const MASK_THRESHOLD = 10; // 降低阈值以兼容半透明涂抹
 
 /** 输出值范围检测阈值：max > 此值判定为 [0,255] 而非 [0,1] */
 export const OUTPUT_SCALE_THRESHOLD = 1.5;
@@ -60,7 +60,7 @@ export const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'im
 export const BRUSH_SIZE = 40;
 
 /** 画笔颜色（红色，半透明） */
-export const BRUSH_COLOR = 'rgba(255, 0, 0, 0.5)';
+export const BRUSH_COLOR = 'rgba(255, 0, 0, 0.8)';
 
 /** 橡皮擦笔触宽度（像素） */
 export const ERASER_SIZE = 40;

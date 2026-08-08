@@ -28,7 +28,6 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { useCanvas } from '@/hooks/useCanvas';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useInference } from '@/hooks/useInference';
-import { canvasToBlob } from '@/utils/image';
 import { downloadAndCache } from '@/utils/model';
 
 export default function App() {
@@ -324,29 +323,26 @@ export default function App() {
    * 将主 Canvas 内容导出为 PNG 并触发浏览器下载
    * 文件命名格式：cleaned_{原始文件名}.png
    */
-  const handleDownload = useCallback(async () => {
-    const canvas = mainCanvasRef.current;
-    if (!canvas || !image) return;
+  const handleDownload = useCallback(() => {
+    if (!resultDataUrl || !image) {
+      showToast('没有可下载的结果', 'error');
+      return;
+    }
 
     try {
-      const blob = await canvasToBlob(canvas);
-      const url = URL.createObjectURL(blob);
-
-      // 创建临时 <a> 标签触发下载
       const a = document.createElement('a');
       const originalName = image.file.name.replace(/\.[^.]+$/, '');
-      a.href = url;
+      a.href = resultDataUrl;
       a.download = `cleaned_${originalName}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
 
       showToast('下载成功！', 'success');
     } catch {
       showToast('下载失败', 'error');
     }
-  }, [mainCanvasRef, image, showToast]);
+  }, [resultDataUrl, image, showToast]);
 
   // ==========================================================================
   // 错误提示（通过 useEffect 展示 toast，避免渲染期副作用）
