@@ -7,10 +7,15 @@
 
 // ======== AI 模型 ========
 
-/** ONNX Runtime WASM 文件路径（用于 ort.env.wasm.wasmPaths） */
-export const ONNX_WASM_PATH = import.meta.env.DEV
-  ? 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/'
-  : '/api/onnx/';
+/**
+ * ONNX Runtime WASM 文件路径。
+ *
+ * 始终使用 jsdelivr CDN 直连，因为：
+ * 1. jsdelivr 的 CORS 头是 Access-Control-Allow-Origin: *，所有域名都能直接访问
+ * 2. Vercel rewrite 代理不支持 .mjs 模块的 import() 调用，会报
+ *    "Failed to resolve module specifier" 错误
+ */
+export const ONNX_WASM_PATH = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
 
 /**
  * LaMa 模型下载地址。
