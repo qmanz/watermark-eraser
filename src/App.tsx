@@ -295,29 +295,21 @@ export default function App() {
       // 第五步：将推理结果绘制到主 Canvas
       drawResult(result);
 
-      // 第六步：生成 data URL，供 CompareView 滑块对比使用
-      const mainCanvas = mainCanvasRef.current;
-      if (mainCanvas) {
-        const blob = await canvasToBlob(mainCanvas);
-        const url = URL.createObjectURL(blob);
-        setResultDataUrl(url);
+      // 第六步：直接把推理结果转成 blob URL（绕过 Canvas，避免 Canvas 被覆盖）
+      const resultCanvas = document.createElement('canvas');
+      resultCanvas.width = result.width;
+      resultCanvas.height = result.height;
+      const rCtx = resultCanvas.getContext('2d')!;
+      rCtx.putImageData(result, 0, 0);
+      const resultBlob = await canvasToBlob(resultCanvas);
+      const resultUrl = URL.createObjectURL(resultBlob);
 
-        // 调试：验证 Canvas 上的内容确实是推理结果
-        const ctx = mainCanvas.getContext('2d');
-        if (ctx) {
-          const verifyPixels = ctx.getImageData(0, 0, mainCanvas.width, mainCanvas.height);
-          let vDiff = 0;
-          for (let i = 0; i < verifyPixels.data.length; i += 4) {
-            if (Math.abs(verifyPixels.data[i] - result.data[i]) > 2 ||
-                Math.abs(verifyPixels.data[i + 1] - result.data[i + 1]) > 2 ||
-                Math.abs(verifyPixels.data[i + 2] - result.data[i + 2]) > 2) {
-              vDiff++;
-            }
-          }
-          console.log('[Erase] Canvas verify: pixels different from result:', vDiff,
-            vDiff === 0 ? '✅ Canvas matches result' : '❌ Canvas differs!');
-        }
-      }
+      // 也验证 Canvas 上已有的内容（调试用）
+      // 注意：主 Canvas 可能在 done 后被 ImageEditor 卸载，这里不依赖它
+      console.log('[Erase] resultUrl length:', resultUrl.length,
+        'first 40:', resultUrl.slice(0, 40));
+
+      setResultDataUrl(resultUrl);
 
       // 第七步：切换到完成状态
       setAppState('done');
