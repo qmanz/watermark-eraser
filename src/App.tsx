@@ -440,17 +440,21 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Canvas 三明治图层：原图 + 遮罩（absolute 叠加） */}
-                <ImageEditor
-                  image={image}
-                  mainCanvasRef={mainCanvasRef}
-                  maskCanvasRef={maskCanvasRef}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseLeave}
-                  showMask={true}
-                />
+                {/* Canvas 三明治图层：原图 + 遮罩（absolute 叠加）
+                    只在 editing / inferring 状态渲染，done 时隐藏以避免
+                    ImageEditor 的 useEffect 把推理结果覆盖回原图 */}
+                {appState !== 'done' && (
+                  <ImageEditor
+                    image={image}
+                    mainCanvasRef={mainCanvasRef}
+                    maskCanvasRef={maskCanvasRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseLeave}
+                    showMask={true}
+                  />
+                )}
 
                 {/* 推理进度条 */}
                 {appState === 'inferring' && (
