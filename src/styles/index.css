@@ -1,0 +1,87 @@
+/**
+ * index.css — 全局样式
+ *
+ * 三层结构：
+ * 1. Tailwind 基础层（@tailwind base/components/utilities）
+ * 2. 自定义组件样式类（@layer components）：btn-primary、btn-secondary、btn-tool、card
+ * 3. 自定义动画和工具类：mask-cursor、slide-in 动画
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Tailwind 基础层覆盖 ---- */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+}
+
+/* ---- 自定义组件样式 ---- */
+
+@layer components {
+  /* 主按钮：紫色填充，hover 加深，disabled 半透明 */
+  .btn-primary {
+    @apply bg-primary-600 text-white px-6 py-3 rounded-xl font-medium
+           hover:bg-primary-800 active:bg-primary-900
+           transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* 次要按钮：白色边框，hover 浅灰背景 */
+  .btn-secondary {
+    @apply bg-white text-gray-700 px-4 py-2 rounded-lg font-medium
+           border border-gray-200
+           hover:bg-gray-50 hover:border-gray-300
+           active:bg-gray-100
+           transition-colors duration-150;
+  }
+
+  /* 工具按钮：画笔/橡皮擦/撤销等，支持 active 态切换 */
+  .btn-tool {
+    @apply px-3 py-2 text-sm rounded-lg font-medium
+           border border-gray-200 bg-white text-gray-600
+           hover:bg-gray-50 hover:border-gray-300
+           active:bg-primary-50 active:border-primary-400 active:text-primary-600
+           transition-colors duration-150;
+  }
+
+  /* 工具按钮激活态（ToolPanel 中配合 btn-tool-active 类使用） */
+  .btn-tool-active {
+    @apply bg-primary-50 border-primary-400 text-primary-600;
+  }
+
+  /* 通用卡片：白色圆角带边框 */
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 p-4;
+  }
+}
+
+/* ---- 自定义样式 ---- */
+
+/* 遮罩层画笔光标：红色圆环拖尾 */
+.mask-cursor {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Ccircle cx='12' cy='12' r='10' stroke='%23ef4444' stroke-width='2' fill='%23ef4444' fill-opacity='0.3'/%3E%3C/svg%3E") 12 12, crosshair;
+}
+
+/* Toast 提示从右侧滑入的动画 */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
