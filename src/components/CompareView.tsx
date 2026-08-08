@@ -43,7 +43,6 @@ export default function CompareView({
       loaded++;
       if (loaded < 2) return;
 
-      // 两张都加载完成，对比像素
       const canvas = document.createElement('canvas');
       const minW = Math.min(origImg.naturalWidth, resultImg.naturalWidth);
       const minH = Math.min(origImg.naturalHeight, resultImg.naturalHeight);
@@ -66,12 +65,10 @@ export default function CompareView({
           diffPx++;
         }
       }
-      console.log('[CompareView] Loaded image comparison:',
-        'orig', origImg.naturalWidth, 'x', origImg.naturalHeight,
+      console.log('[CompareView] orig', origImg.naturalWidth, 'x', origImg.naturalHeight,
         '| result', resultImg.naturalWidth, 'x', resultImg.naturalHeight,
-        '| diff pixels:', diffPx, '/', total,
-        '(' + (diffPx / total * 100).toFixed(1) + '%)',
-        diffPx > 0 ? '✅ Images differ' : '❌ Images identical');
+        '| diff', (diffPx / total * 100).toFixed(1) + '%',
+        diffPx > 0 ? '✅' : '❌');
     }
 
     origImg.onload = check;

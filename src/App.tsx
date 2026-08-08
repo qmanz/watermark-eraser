@@ -277,59 +277,37 @@ export default function App() {
     setAppState('inferring');
 
     try {
-      // 第四步：执行 AI 推理（当前从 CDN 加载的 window.ort 运行）
+      // 第四步：执行 AI 推理
       const result = await startInference(imgData, maskData, selectedModel);
-
-      // 调试：对比推理前后的像素，确认模型确实产生了变化
-      const imgPixels = imgData.data;
-      const resPixels = result.data;
-      let diffCount = 0;
-      for (let i = 0; i < imgPixels.length; i += 4) {
-        if (Math.abs(imgPixels[i] - resPixels[i]) > 5 ||
-            Math.abs(imgPixels[i + 1] - resPixels[i + 1]) > 5 ||
-            Math.abs(imgPixels[i + 2] - resPixels[i + 2]) > 5) {
-          diffCount++;
-        }
-      }
-      console.log('[Erase] Inference complete:',
-        'input size:', imgData.width, 'x', imgData.height,
-        'result size:', result.width, 'x', result.height,
-        'different pixels:', diffCount, '/', imgPixels.length / 4,
-        '(' + (diffCount / (imgPixels.length / 4) * 100).toFixed(1) + '%)');
 
       // 第五步：将推理结果绘制到主 Canvas
       drawResult(result);
 
-      // 第六步：直接把推理结果转成 blob URL（绕过 Canvas，避免 Canvas 被覆盖）
+      // 第六步：直接从推理结果生成 blob URL（用同步的 toDataURL 避免 canvasToBlob 卡死）
       const resultCanvas = document.createElement('canvas');
       resultCanvas.width = result.width;
       resultCanvas.height = result.height;
       const rCtx = resultCanvas.getContext('2d')!;
       rCtx.putImageData(result, 0, 0);
-      const resultBlob = await canvasToBlob(resultCanvas);
-      const resultUrl = URL.createObjectURL(resultBlob);
+      // toDataURL 同步执行，比 toBlob 更可靠
+      const resultUrl = resultCanvas.toDataURL('image/png');
+      setResultDataUrl(resultUrl);
 
-      console.log('[Erase] resultUrl length:', resultUrl.length,
-        'first 40:', resultUrl.slice(0, 40));
-
-      // 同时生成同尺寸的原图 blob URL（确保对比时两张图尺寸一致）
+      // 同时生成同尺寸的原图（确保对比时两张图尺寸一致）
+      if (!image) return;
       const origCanvas = document.createElement('canvas');
       origCanvas.width = result.width;
       origCanvas.height = result.height;
       const oCtx = origCanvas.getContext('2d')!;
-      if (!image) return;
       oCtx.drawImage(image.image, 0, 0, result.width, result.height);
-      const origBlob = await canvasToBlob(origCanvas);
-      const origUrl = URL.createObjectURL(origBlob);
-      console.log('[Erase] origUrl size:', result.width, 'x', result.height);
-
-      setResultDataUrl(resultUrl);
+      const origUrl = origCanvas.toDataURL('image/png');
       setCompareOriginalUrl(origUrl);
 
       // 第七步：切换到完成状态
       setAppState('done');
       showToast('水印擦除完成！', 'success');
     } catch (err) {
+      console.error('[Erase] Failed:', err);
       // 推理失败：恢复到编辑状态，显示错误信息
       setAppState('editing');
       showToast(err instanceof Error ? err.message : '推理失败，请重试', 'error');
