@@ -32,13 +32,52 @@ export default function CompareView({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (resultDataUrl) {
-      console.log('[CompareView] resultDataUrl length:', resultDataUrl.length,
-        'first 50:', resultDataUrl.slice(0, 50));
-      console.log('[CompareView] originalDataUrl length:', originalDataUrl.length,
-        'first 50:', originalDataUrl.slice(0, 50));
-      console.log('[CompareView] Same URL?', resultDataUrl === originalDataUrl);
+    if (!resultDataUrl) return;
+
+    // 调试：加载两张图片到像素级对比
+    const origImg = new Image();
+    const resultImg = new Image();
+    let loaded = 0;
+
+    function check() {
+      loaded++;
+      if (loaded < 2) return;
+
+      // 两张都加载完成，对比像素
+      const canvas = document.createElement('canvas');
+      const minW = Math.min(origImg.naturalWidth, resultImg.naturalWidth);
+      const minH = Math.min(origImg.naturalHeight, resultImg.naturalHeight);
+      canvas.width = minW;
+      canvas.height = minH;
+      const ctx = canvas.getContext('2d')!;
+
+      ctx.drawImage(origImg, 0, 0);
+      const orig = ctx.getImageData(0, 0, minW, minH);
+
+      ctx.drawImage(resultImg, 0, 0);
+      const res = ctx.getImageData(0, 0, minW, minH);
+
+      let diffPx = 0;
+      const total = minW * minH;
+      for (let i = 0; i < orig.data.length; i += 4) {
+        if (Math.abs(orig.data[i] - res.data[i]) > 5 ||
+            Math.abs(orig.data[i + 1] - res.data[i + 1]) > 5 ||
+            Math.abs(orig.data[i + 2] - res.data[i + 2]) > 5) {
+          diffPx++;
+        }
+      }
+      console.log('[CompareView] Loaded image comparison:',
+        'orig', origImg.naturalWidth, 'x', origImg.naturalHeight,
+        '| result', resultImg.naturalWidth, 'x', resultImg.naturalHeight,
+        '| diff pixels:', diffPx, '/', total,
+        '(' + (diffPx / total * 100).toFixed(1) + '%)',
+        diffPx > 0 ? '✅ Images differ' : '❌ Images identical');
     }
+
+    origImg.onload = check;
+    resultImg.onload = check;
+    origImg.src = originalDataUrl;
+    resultImg.src = resultDataUrl;
   }, [resultDataUrl, originalDataUrl]);
 
   /** 鼠标拖拽滑块时更新位置 */
