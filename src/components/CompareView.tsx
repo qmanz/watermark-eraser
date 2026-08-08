@@ -14,7 +14,7 @@
  * 支持鼠标和触摸事件，手机上也能拖拽对比
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface CompareViewProps {
   originalDataUrl: string;
@@ -30,6 +30,16 @@ export default function CompareView({
   /** 滑块位置：0-100 百分比，50 = 居中 */
   const [sliderPos, setSliderPos] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (resultDataUrl) {
+      console.log('[CompareView] resultDataUrl length:', resultDataUrl.length,
+        'first 50:', resultDataUrl.slice(0, 50));
+      console.log('[CompareView] originalDataUrl length:', originalDataUrl.length,
+        'first 50:', originalDataUrl.slice(0, 50));
+      console.log('[CompareView] Same URL?', resultDataUrl === originalDataUrl);
+    }
+  }, [resultDataUrl, originalDataUrl]);
 
   /** 鼠标拖拽滑块时更新位置 */
   const handleMouseMove = (e: React.MouseEvent) => {
