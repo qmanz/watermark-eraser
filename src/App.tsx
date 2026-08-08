@@ -301,6 +301,22 @@ export default function App() {
         const blob = await canvasToBlob(mainCanvas);
         const url = URL.createObjectURL(blob);
         setResultDataUrl(url);
+
+        // 调试：验证 Canvas 上的内容确实是推理结果
+        const ctx = mainCanvas.getContext('2d');
+        if (ctx) {
+          const verifyPixels = ctx.getImageData(0, 0, mainCanvas.width, mainCanvas.height);
+          let vDiff = 0;
+          for (let i = 0; i < verifyPixels.data.length; i += 4) {
+            if (Math.abs(verifyPixels.data[i] - result.data[i]) > 2 ||
+                Math.abs(verifyPixels.data[i + 1] - result.data[i + 1]) > 2 ||
+                Math.abs(verifyPixels.data[i + 2] - result.data[i + 2]) > 2) {
+              vDiff++;
+            }
+          }
+          console.log('[Erase] Canvas verify: pixels different from result:', vDiff,
+            vDiff === 0 ? '✅ Canvas matches result' : '❌ Canvas differs!');
+        }
       }
 
       // 第七步：切换到完成状态
