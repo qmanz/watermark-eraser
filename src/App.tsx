@@ -275,6 +275,23 @@ export default function App() {
       // 第四步：执行 AI 推理（当前从 CDN 加载的 window.ort 运行）
       const result = await startInference(imgData, maskData, selectedModel);
 
+      // 调试：对比推理前后的像素，确认模型确实产生了变化
+      const imgPixels = imgData.data;
+      const resPixels = result.data;
+      let diffCount = 0;
+      for (let i = 0; i < imgPixels.length; i += 4) {
+        if (Math.abs(imgPixels[i] - resPixels[i]) > 5 ||
+            Math.abs(imgPixels[i + 1] - resPixels[i + 1]) > 5 ||
+            Math.abs(imgPixels[i + 2] - resPixels[i + 2]) > 5) {
+          diffCount++;
+        }
+      }
+      console.log('[Erase] Inference complete:',
+        'input size:', imgData.width, 'x', imgData.height,
+        'result size:', result.width, 'x', result.height,
+        'different pixels:', diffCount, '/', imgPixels.length / 4,
+        '(' + (diffCount / (imgPixels.length / 4) * 100).toFixed(1) + '%)');
+
       // 第五步：将推理结果绘制到主 Canvas
       drawResult(result);
 
