@@ -294,14 +294,19 @@ export default function App() {
       setResultDataUrl(resultUrl);
 
       // 同时生成同尺寸的原图（确保对比时两张图尺寸一致）
-      if (!image) return;
-      const origCanvas = document.createElement('canvas');
-      origCanvas.width = result.width;
-      origCanvas.height = result.height;
-      const oCtx = origCanvas.getContext('2d')!;
-      oCtx.drawImage(image.image, 0, 0, result.width, result.height);
-      const origUrl = origCanvas.toDataURL('image/png');
-      setCompareOriginalUrl(origUrl);
+      if (image) {
+        try {
+          const origCanvas = document.createElement('canvas');
+          origCanvas.width = result.width;
+          origCanvas.height = result.height;
+          const oCtx = origCanvas.getContext('2d')!;
+          oCtx.drawImage(image.image, 0, 0, result.width, result.height);
+          const origUrl = origCanvas.toDataURL('image/png');
+          setCompareOriginalUrl(origUrl);
+        } catch (e) {
+          console.warn('[Erase] Failed to generate compare original:', e);
+        }
+      }
 
       // 第七步：切换到完成状态
       setAppState('done');
@@ -312,7 +317,7 @@ export default function App() {
       setAppState('editing');
       showToast(err instanceof Error ? err.message : '推理失败，请重试', 'error');
     }
-  }, [getImageData, getMaskData, selectedModel, startInference, drawResult, mainCanvasRef, showToast]);
+  }, [getImageData, getMaskData, selectedModel, startInference, drawResult, mainCanvasRef, showToast, image]);
 
   /**
    * 下载处理后的图片
