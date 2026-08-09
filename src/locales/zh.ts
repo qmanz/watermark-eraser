@@ -88,6 +88,30 @@ const zh = {
   language: {
     label: '语言',
   },
+  footer: {
+    about: '关于我们',
+    contact: '联系我们',
+    privacy: '隐私政策',
+    copyright: '© 2026 WatermarkEraser. 保留所有权利。',
+  },
+  pages: {
+    aboutTitle: '关于 WatermarkEraser',
+    aboutContent: 'WatermarkEraser 是一款免费、注重隐私的 AI 水印擦除工具。所有处理均在您的浏览器本地运行——您的图片永远不会上传到任何服务器。我们使用最先进的 LaMa（Large Mask Inpainting）模型，智能重建水印、Logo、文字和不必要物体背后的区域。',
+    aboutFeatures: [
+      '100% 本地处理，无需上传图片',
+      'AI 驱动的 LaMa 修复模型',
+      '支持 JPG、PNG、WebP 格式',
+      '精准画笔和矩形选区工具',
+      '原图与结果并排对比',
+      '完全免费，无需注册',
+    ],
+    contactTitle: '联系我们',
+    contactIntro: '有问题、建议或发现 Bug？欢迎联系我们。',
+    contactEmail: '电子邮箱',
+    contactResponse: '我们通常在 24 小时内回复。',
+    privacyTitle: '隐私政策',
+    privacyContent: '最后更新：2026 年 8 月\n\nWatermarkEraser 致力于保护您的隐私。以下是数据处理方式：\n\n1. 所有图片处理均在您浏览器本地进行，使用 WebAssembly 和 ONNX Runtime。您的图片不会离开您的设备。\n\n2. 我们不收集、存储或传输您的任何图片或个人数据到外部服务器。\n\n3. 唯一存储在您设备上的数据是您的语言偏好（localStorage）和 AI 模型文件（缓存至 IndexedDB，方便下次更快使用）。\n\n4. 我们使用 Google AdSense 展示广告。AdSense 可能使用 Cookie 来提供个性化广告。您可以在 https://policies.google.com/technologies/ads 了解更多关于 Google 如何使用数据的信息。\n\n5. 除 AdSense 提供的功能外，我们不使用任何分析或追踪工具。\n\n6. 如有关于本政策的任何疑问，请通过 support@watermarkeraser.com 联系我们。',
+  },
 } as const;
 
 export default zh;

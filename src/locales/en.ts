@@ -88,6 +88,30 @@ const en = {
   language: {
     label: 'Language',
   },
+  footer: {
+    about: 'About Us',
+    contact: 'Contact Us',
+    privacy: 'Privacy Policy',
+    copyright: '© 2026 WatermarkEraser. All rights reserved.',
+  },
+  pages: {
+    aboutTitle: 'About WatermarkEraser',
+    aboutContent: 'WatermarkEraser is a free, privacy-first AI watermark removal tool. All processing runs locally in your browser — your images are never uploaded to any server. We use the state-of-the-art LaMa (Large Mask Inpainting) model to intelligently reconstruct the area behind watermarks, logos, text, and unwanted objects.',
+    aboutFeatures: [
+      '100% local processing — no image upload',
+      'AI-powered LaMa inpainting model',
+      'Support JPG, PNG, WebP formats',
+      'Precise brush and rectangle selection tools',
+      'Side-by-side before/after comparison',
+      'Completely free, no registration required',
+    ],
+    contactTitle: 'Contact Us',
+    contactIntro: 'Have questions, suggestions, or found a bug? We\'d love to hear from you.',
+    contactEmail: 'Email',
+    contactResponse: 'We typically respond within 24 hours.',
+    privacyTitle: 'Privacy Policy',
+    privacyContent: 'Last updated: August 2026\n\nWatermarkEraser is committed to protecting your privacy. Here\'s how we handle your data:\n\n1. All image processing happens locally in your browser using WebAssembly and ONNX Runtime. Your images never leave your device.\n\n2. We do not collect, store, or transmit any of your images or personal data to external servers.\n\n3. The only data stored on your device is your language preference (in localStorage) and the AI model file (cached in IndexedDB for faster repeated use).\n\n4. We use Google AdSense to display advertisements. AdSense may use cookies to serve personalized ads. You can learn more about how Google uses data at https://policies.google.com/technologies/ads\n\n5. We do not use any analytics or tracking tools beyond what AdSense provides.\n\n6. If you have any questions about this policy, please contact us at support@watermarkeraser.com',
+  },
 } as const;
 
 export default en;

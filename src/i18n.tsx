@@ -30,6 +30,18 @@ export interface Translations extends Record<keyof typeof zh, unknown> {
   errorBoundary: { title: string; unknown: string; refresh: string };
   ad: { label: string };
   language: { label: string };
+  footer: { about: string; contact: string; privacy: string; copyright: string };
+  pages: {
+    aboutTitle: string;
+    aboutContent: string;
+    aboutFeatures: string[];
+    contactTitle: string;
+    contactIntro: string;
+    contactEmail: string;
+    contactResponse: string;
+    privacyTitle: string;
+    privacyContent: string;
+  };
 }
 
 /** 支持的语言代码 */
@@ -44,7 +56,7 @@ const LOCALE_CONFIG: Record<Locale, { label: string; dir: 'ltr' | 'rtl'; transla
   zh: { label: '简体中文', dir: 'ltr', translations: zh as unknown as Translations },
   en: { label: 'English', dir: 'ltr', translations: en as unknown as Translations },
   es: { label: 'Español', dir: 'ltr', translations: es as unknown as Translations },
-  ar: { label: 'العربية', dir: 'rtl', translations: ar as unknown as Translations },
+  ar: { label: 'العربية', dir: 'ltr', translations: ar as unknown as Translations },
 };
 
 /** i18n Context 值 */
@@ -58,14 +70,10 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 function getInitialLang(): Locale {
-  if (typeof window === 'undefined') return 'zh';
+  if (typeof window === 'undefined') return 'en';
   const stored = localStorage.getItem('lang') as Locale | null;
   if (stored && stored in LOCALE_CONFIG) return stored;
-  const navLang = navigator.language.toLowerCase();
-  if (navLang.startsWith('ar')) return 'ar';
-  if (navLang.startsWith('es')) return 'es';
-  if (navLang.startsWith('en')) return 'en';
-  return 'zh';
+  return 'en';
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {

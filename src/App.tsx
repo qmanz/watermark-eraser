@@ -19,6 +19,9 @@ import CompareView from '@/components/CompareView';
 import Toast from '@/components/Toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import AdSlot from '@/components/AdSlot';
+import Footer from '@/components/Footer';
+import StaticPage from '@/components/StaticPage';
+import type { PageRoute } from '@/components/Footer';
 import { useCanvas } from '@/hooks/useCanvas';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useInference } from '@/hooks/useInference';
@@ -33,6 +36,8 @@ export default function App() {
   // ==========================================================================
 
   const [appState, setAppState] = useState<AppState>('idle');
+  /** 页面路由：main（主应用）| about | contact | privacy */
+  const [currentPage, setCurrentPage] = useState<PageRoute>('main');
   const selectedModel: ModelType = 'LaMa';
   const [modelStatus, setModelStatus] = useState<ModelStatus>('unloaded');
   const [modelProgress, setModelProgress] = useState(0);
@@ -260,6 +265,18 @@ export default function App() {
   }, [inferError, showToast]);
 
   // ==========================================================================
+  // 页面路由
+  // ==========================================================================
+
+  if (currentPage !== 'main') {
+    return (
+      <ErrorBoundary t={t}>
+        <StaticPage page={currentPage} onBack={() => setCurrentPage('main')} />
+      </ErrorBoundary>
+    );
+  }
+
+  // ==========================================================================
   // 渲染
   // ==========================================================================
 
@@ -404,6 +421,8 @@ export default function App() {
             <AdSlot variant="responsive" />
           </div>
         </main>
+
+        <Footer onNavigate={setCurrentPage} />
 
         <Toast
           message={toast?.message ?? null}
