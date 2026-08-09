@@ -288,7 +288,7 @@ export default function App() {
         <main className="max-w-7xl mx-auto px-4 py-6">
           {/* ========== 顶部广告位：Leaderboard (728x90) ========== */}
           <div className="mb-6 flex justify-center">
-            <AdSlot variant="leaderboard" />
+            <AdSlot variant="leaderboard" clientId="ca-pub-7054188307063641" slotId="leaderboard-top" showPlaceholder={false} />
           </div>
 
           {/* ========== 初始状态 ========== */}
@@ -357,7 +357,7 @@ export default function App() {
                 {/* 结果区广告位：Responsive */}
                 {appState === 'done' && (
                   <div className="flex justify-center">
-                    <AdSlot variant="responsive" />
+                    <AdSlot variant="responsive" clientId="ca-pub-7054188307063641" slotId="result-responsive" showPlaceholder={false} />
                   </div>
                 )}
 
@@ -384,7 +384,7 @@ export default function App() {
                 />
 
                 {/* 侧边栏广告位：Medium Rectangle (300x250) */}
-                <AdSlot variant="medium-rectangle" />
+                <AdSlot variant="medium-rectangle" clientId="ca-pub-7054188307063641" slotId="sidebar-rectangle" showPlaceholder={false} />
 
                 <ModelSelector
                   modelStatus={modelStatus}
@@ -418,7 +418,7 @@ export default function App() {
 
           {/* ========== 底部广告位：Responsive ========== */}
           <div className="mt-6 flex justify-center">
-            <AdSlot variant="responsive" />
+            <AdSlot variant="responsive" clientId="ca-pub-7054188307063641" slotId="bottom-responsive" showPlaceholder={false} />
           </div>
         </main>
 
