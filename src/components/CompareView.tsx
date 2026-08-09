@@ -15,6 +15,7 @@
  */
 
 import { useState, useRef, useCallback } from 'react';
+import { useI18n } from '@/i18n';
 
 interface CompareViewProps {
   originalDataUrl: string;
@@ -27,7 +28,7 @@ export default function CompareView({
   resultDataUrl,
   onDownload,
 }: CompareViewProps) {
-  /** 滑块位置：0-100 百分比，0 = 全看结果，100 = 全看原图 */
+  const { t } = useI18n();
   const [sliderPos, setSliderPos] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -58,15 +59,12 @@ export default function CompareView({
     updatePos(touch.clientX);
   }, [updatePos]);
 
-  // 原图从左侧裁剪: inset(0 calc(100% - sliderPos%) 0 0)
-  // 即：原图只显示右边 (100 - sliderPos)% 的部分，左边 sliderPos% 显示结果图
   const clipRight = 100 - sliderPos;
 
   return (
     <div className="card">
-      {/* 标题栏 + 下载按钮 */}
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-700">对比预览</h3>
+        <h3 className="text-sm font-medium text-gray-700">{t.compare.title}</h3>
         {resultDataUrl && (
           <button
             onClick={onDownload}
@@ -75,12 +73,11 @@ export default function CompareView({
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1 inline-block">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
             </svg>
-            下载结果
+            {t.actions.download}
           </button>
         )}
       </div>
 
-      {/* 对比容器 */}
       <div
         ref={containerRef}
         className="relative w-full rounded-lg overflow-hidden border border-gray-200 select-none"
@@ -90,12 +87,11 @@ export default function CompareView({
         onMouseLeave={handleMouseUp}
         onTouchMove={handleTouchMove}
       >
-        {/* 底层：结果图（全图可见，被原图遮挡右边部分） */}
         <div className="relative">
           {resultDataUrl ? (
             <img
               src={resultDataUrl}
-              alt="处理后"
+              alt={t.compare.result}
               className="w-full block"
               draggable={false}
             />
@@ -104,7 +100,6 @@ export default function CompareView({
           )}
         </div>
 
-        {/* 上层：原图，用 clip-path 只显示右侧部分 */}
         <div
           className="absolute inset-0"
           style={{
@@ -113,21 +108,19 @@ export default function CompareView({
         >
           <img
             src={originalDataUrl}
-            alt="原图"
+            alt={t.compare.original}
             className="w-full block"
             draggable={false}
           />
         </div>
 
-        {/* 标签 */}
         <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
-          结果
+          {t.compare.result}
         </div>
         <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded z-10">
-          原图
+          {t.compare.original}
         </div>
 
-        {/* 滑块竖线 + 手柄 */}
         <div
           className="absolute top-0 bottom-0 w-0.5 bg-white shadow-md z-20"
           style={{ left: `${sliderPos}%` }}

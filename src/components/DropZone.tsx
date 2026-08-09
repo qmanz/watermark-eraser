@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
+import { useI18n } from '@/i18n';
 
 interface DropZoneProps {
   onFileSelect: (file: File) => void;
@@ -24,33 +25,27 @@ interface DropZoneProps {
 }
 
 export default function DropZone({ onFileSelect, disabled }: DropZoneProps) {
-  /** 是否正在拖拽文件进入区域 */
+  const { t } = useI18n();
   const [isDragover, setIsDragover] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ======== 拖拽事件处理 ========
-
-  /** 文件拖入区域：高亮边框 */
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragover(true);
   }, []);
 
-  /** 文件拖出区域：恢复默认样式 */
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragover(false);
   }, []);
 
-  /** 必须阻止 dragover 的默认行为，否则无法触发 drop 事件 */
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
   }, []);
 
-  /** 文件放下：获取第一个文件并回调 */
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
@@ -65,16 +60,12 @@ export default function DropZone({ onFileSelect, disabled }: DropZoneProps) {
     [onFileSelect]
   );
 
-  // ======== 点击事件处理 ========
-
-  /** 点击区域：触发隐藏的 <input type="file"> */
   const handleClick = useCallback(() => {
     if (!disabled) {
       fileInputRef.current?.click();
     }
   }, [disabled]);
 
-  /** 文件选择器确认后回调 */
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
@@ -98,7 +89,6 @@ export default function DropZone({ onFileSelect, disabled }: DropZoneProps) {
       onDrop={handleDrop}
       onClick={handleClick}
     >
-      {/* 隐藏的文件输入框，由点击事件触发 */}
       <input
         ref={fileInputRef}
         type="file"
@@ -107,10 +97,8 @@ export default function DropZone({ onFileSelect, disabled }: DropZoneProps) {
         onChange={handleFileChange}
       />
 
-      {/* 上传提示内容 */}
       <div className="flex flex-col items-center gap-3">
         <div className="w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center">
-          {/* 图片上传图标 */}
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="1.5">
             <rect x="3" y="3" width="18" height="18" rx="2" />
             <circle cx="8.5" cy="8.5" r="1.5" fill="#534AB7" />
@@ -119,10 +107,10 @@ export default function DropZone({ onFileSelect, disabled }: DropZoneProps) {
         </div>
         <div>
           <p className="text-sm font-medium text-gray-700">
-            拖拽图片到此处，或<span className="text-primary-600">点击选择</span>
+            {t.dropzone.dragHint}<span className="text-primary-600">{t.dropzone.clickHere}</span>
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            支持 JPG / PNG / WebP · 最大 50MB
+            {t.dropzone.formats}
           </p>
         </div>
       </div>

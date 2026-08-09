@@ -30,4 +30,6 @@ export default {
     },
   },
   plugins: [],
+  // RTL 支持：在 CSS 中使用 rtl: 前缀覆盖方向相关样式
+  // 例如: rtl:right-0 rtl:left-auto 镜像 left/right
 };

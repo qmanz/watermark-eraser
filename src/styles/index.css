@@ -2,9 +2,10 @@
  * index.css — 全局样式
  *
  * 三层结构：
- * 1. Tailwind 基础层（@tailwind base/components/utilities）
- * 2. 自定义组件样式类（@layer components）：btn-primary、btn-secondary、btn-tool、card
- * 3. 自定义动画和工具类：mask-cursor、slide-in 动画
+ * 1. Tailwind 基础层
+ * 2. 自定义组件样式类：btn-primary、btn-secondary、btn-tool、card
+ * 3. 自定义动画和工具类：mask-cursor、slide-in
+ * 4. RTL（阿拉伯文）方向支持
  */
 
 @tailwind base;
@@ -26,7 +27,6 @@
 /* ---- 自定义组件样式 ---- */
 
 @layer components {
-  /* 主按钮：紫色填充，hover 加深，disabled 半透明 */
   .btn-primary {
     @apply bg-primary-600 text-white px-6 py-3 rounded-xl font-medium
            hover:bg-primary-800 active:bg-primary-900
@@ -34,7 +34,6 @@
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
-  /* 次要按钮：白色边框，hover 浅灰背景 */
   .btn-secondary {
     @apply bg-white text-gray-700 px-4 py-2 rounded-lg font-medium
            border border-gray-200
@@ -43,7 +42,6 @@
            transition-colors duration-150;
   }
 
-  /* 工具按钮：画笔/橡皮擦/撤销等，支持 active 态切换 */
   .btn-tool {
     @apply px-3 py-2 text-sm rounded-lg font-medium
            border border-gray-200 bg-white text-gray-600
@@ -52,25 +50,26 @@
            transition-colors duration-150;
   }
 
-  /* 工具按钮激活态（ToolPanel 中配合 btn-tool-active 类使用） */
   .btn-tool-active {
     @apply bg-primary-50 border-primary-400 text-primary-600;
   }
 
-  /* 通用卡片：白色圆角带边框 */
   .card {
     @apply bg-white rounded-xl border border-gray-200 p-4;
+  }
+
+  /* 广告占位区域的呼吸动画 */
+  .ad-placeholder {
+    animation: ad-pulse 2s ease-in-out infinite;
   }
 }
 
 /* ---- 自定义样式 ---- */
 
-/* 遮罩层画笔光标：红色圆环拖尾 */
 .mask-cursor {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Ccircle cx='12' cy='12' r='10' stroke='%23ef4444' stroke-width='2' fill='%23ef4444' fill-opacity='0.3'/%3E%3C/svg%3E") 12 12, crosshair;
 }
 
-/* Toast 提示从右侧滑入的动画 */
 @keyframes slide-in {
   from {
     opacity: 0;
@@ -84,4 +83,33 @@
 
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
+}
+
+@keyframes ad-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* ---- RTL（阿拉伯文）方向支持 ---- */
+
+/* 全局 RTL 镜像：切换语义化 left/right */
+[dir="rtl"] .animate-slide-in {
+  animation-name: slide-in-rtl;
+}
+
+@keyframes slide-in-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* RTL 下 toast 从左侧滑入 */
+[dir="rtl"] .fixed.top-4.right-4 {
+  right: auto;
+  left: 1rem;
 }

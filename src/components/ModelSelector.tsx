@@ -3,12 +3,11 @@
  *
  * 当前仅使用 LaMa 模型（Large Mask Inpainting），效果最佳。
  * 显示模型状态（未加载/下载中/已就绪/失败）和下载进度。
- *
- * MI-GAN 因 hf-mirror.com CORS 限制暂时不可用，后续可通过 CORS 代理恢复。
  */
 
 import type { ModelStatus } from '@/types';
 import { MODEL_STATUS_CONFIG } from '@/constants';
+import { useI18n } from '@/i18n';
 
 interface ModelSelectorProps {
   modelStatus: ModelStatus;
@@ -19,13 +18,23 @@ export default function ModelSelector({
   modelStatus,
   modelProgress,
 }: ModelSelectorProps) {
+  const { t } = useI18n();
   const status = MODEL_STATUS_CONFIG[modelStatus];
+
+  // 根据 modelStatus 映射 i18n 标签
+  const statusLabel = (() => {
+    switch (modelStatus) {
+      case 'downloading': return t.model.downloading;
+      case 'unloaded': return t.model.unloaded;
+      case 'ready': return t.model.ready;
+      case 'error': return t.model.error;
+    }
+  })();
 
   return (
     <div className="card">
-      <h3 className="text-sm font-medium text-gray-700 mb-3">AI 模型</h3>
+      <h3 className="text-sm font-medium text-gray-700 mb-3">{t.model.title}</h3>
 
-      {/* 当前模型信息 */}
       <div className="p-3 rounded-lg border border-primary-200 bg-primary-50">
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-semibold text-gray-800">LaMa</span>
@@ -37,19 +46,18 @@ export default function ModelSelector({
               className="w-1.5 h-1.5 rounded-full"
               style={{ backgroundColor: status.color }}
             />
-            {status.label}
+            {statusLabel}
           </span>
         </div>
         <p className="text-xs text-gray-400">
-          Large Mask Inpainting · 200MB · 效果最佳
+          {t.model.description}
         </p>
       </div>
 
-      {/* 下载进度条 */}
       {modelStatus === 'downloading' && (
         <div className="mt-3">
           <div className="flex justify-between text-xs text-gray-400 mb-1">
-            <span>下载中</span>
+            <span>{t.model.downloading}</span>
             <span>{modelProgress}%</span>
           </div>
           <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -61,10 +69,9 @@ export default function ModelSelector({
         </div>
       )}
 
-      {/* 错误提示 */}
       {modelStatus === 'error' && (
         <p className="mt-2 text-xs text-red-500">
-          加载失败，请刷新页面重试
+          {t.model.retryHint}
         </p>
       )}
     </div>
